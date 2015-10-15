@@ -167,7 +167,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('networkTemplate'))]",
+          "uri": "[concat(parameters('templatebaseuri'), parameters('networkTemplate'))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -186,7 +186,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('storageTemplate'))]",
+          "uri": "[concat(parameters('templatebaseuri'), parameters('storageTemplate'))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -213,7 +213,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('nicTemplate'))]",
+          "uri": "[concat(parameters('templatebaseuri'), parameters('nicTemplate'))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -263,7 +263,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('lbTemplate'))]",
+          "uri": "[concat(parameters('templatebaseuri'), parameters('lbTemplate'))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -297,7 +297,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('vmTierDeploymentTemplate'))]",
+          "uri": "[concat(parameters('templatebaseuri'), parameters('vmTierDeploymentTemplate'))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -310,8 +310,8 @@
           "adminPassword": { "value": "[parameters('adminPassword')]" },
           "storageAccountName": { "value": "[parameters('storageAccountName')]" },
           "templateNames": { "value": "[variables('instanceConfigurations')[copyIndex()].templateNames]" },
-          "templateBaseUri": { "value": "[concat(parameters('templatebaseuri'), 'VM/')]" },
-          "vmBaseTemplateUri": { "value": "[concat(parameters('templatebaseuri'), 'VM/', parameters('vmBaseTemplate'))]" },
+          "templateBaseUri": { "value": "[parameters('templatebaseuri')]" },
+          "vmBaseTemplateUri": { "value": "[concat(parameters('templatebaseuri'), parameters('vmBaseTemplate'))]" },
           "parentResourceName": {"value": "[concat('VMTier', copyIndex(1) ,'Deployment')]"}
 
           //"dependsOn": { "value": "" },

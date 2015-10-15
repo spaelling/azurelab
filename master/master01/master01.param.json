@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "templatebaseuri": {
-      "value": "https://scsmlab01storage.blob.core.windows.net/templates"
+      "value": "https://raw.githubusercontent.com/spaelling/azurelab/master/"
     },
     "storageAccountName": {
       "value": "scsmlab01storage"
@@ -15,13 +15,13 @@
       "value": "scsmlab01vnet"
     },
     "vmBaseTemplate": {
-      "value": "Base/VM.json"
+      "value": "lib/VM.json"
     },
     "networkTemplate": {
-      "value": "Base/Network.json"
+      "value": "lib/Network.json"
     },
     "lbTemplate": {
-      "value": "Base/LoadBalancer.json"
+      "value": "lib/LoadBalancer.json"
     },
     "addressPrefix": {
       "value": "10.0.0.0/16"
@@ -33,7 +33,7 @@
       "value": "10.0.0.0/24"
     },
     "storageTemplate": {
-      "value": "Base/Storage.json"
+      "value": "lib/Storage.json"
     },
     "storageAccountType": {
       "value": "Standard_LRS"
@@ -54,17 +54,17 @@
     },
     "tier2VMTemplateNames": {
       "value": [
-        "VM/VMSQL2012R2StndSingleInstance"
+        "vm/VMSQL2012R2StndSingleInstance"
       ]
     },
     "tier3VMTemplateNames": {
       "value": [
-        "VM/VMSCSM2012R2PrimMngt",
-        "VM/VMSCSM2012R2PrimMngt"
+        "vm/VMSCSM2012R2PrimMngt",
+        "vm/VMSCSM2012R2PrimMngt"
       ]
     },
     "nicTemplate": {
-      "value": "Base/NIC.json"
+      "value": "lib/NIC.json"
     },
     "tier1InstanceVMSize": {
       "value": "Standard_A1"
@@ -94,7 +94,7 @@
       "value": "Passw0rd1"
     },
     "vmTierDeploymentTemplate": {
-      "value": "Base/VMTierDeployment.json"
+      "value": "lib/VMTierDeployment.json"
     }
   }
 }

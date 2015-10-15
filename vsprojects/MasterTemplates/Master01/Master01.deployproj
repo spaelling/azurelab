@@ -30,12 +30,19 @@
     <Folder Include="Tools\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\master\master01\master01.json">
+      <Link>Templates\master01.json</Link>
+    </None>
+    <None Include="..\..\..\master\master01\master01.param.json">
+      <Link>Templates\master01.param.json</Link>
+    </None>
+    <None Include="..\..\..\scripts\helper.ps1">
+      <Link>Scripts\helper.ps1</Link>
+    </None>
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
-    <Content Include="Templates\DeploymentTemplate.json" />
-    <None Include="Templates\DeploymentTemplate.param.dev.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Tools\AzCopy.exe" />
