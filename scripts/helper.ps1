@@ -10,10 +10,10 @@ Import-Module Azure
 
 Switch-AzureMode AzureResourceManager
 
-Remove-AzureAccount -Name 'spaelling@gmail.com'
+Remove-AzureAccount -Name (Get-AzureAccount | % Id)
 Add-AzureAccount
 
-$SubscriptionID = '72615edd-32ed-48b6-be09-266117538d3c'; Select-AzureSubscription -SubscriptionId $SubscriptionID
+$SubscriptionID = Get-AzureSubscription -SubscriptionName 'BizSpark' | % SubscriptionId; Select-AzureSubscription -SubscriptionId $SubscriptionID
 
 $ResourceGroupName = "scsmlab01"
 $Location = "West Europe"
