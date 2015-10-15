@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "AzureLabLib", "AzureLabLib\AzureLabLib.deployproj", "{0968FBA5-A13A-4CD5-ADF4-914A422DB9EE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0968FBA5-A13A-4CD5-ADF4-914A422DB9EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0968FBA5-A13A-4CD5-ADF4-914A422DB9EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0968FBA5-A13A-4CD5-ADF4-914A422DB9EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0968FBA5-A13A-4CD5-ADF4-914A422DB9EE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

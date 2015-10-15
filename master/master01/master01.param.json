@@ -1,0 +1,100 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templatebaseuri": {
+      "value": "https://scsmlab01storage.blob.core.windows.net/templates"
+    },
+    "storageAccountName": {
+      "value": "scsmlab01storage"
+    },
+    "dnsNameForPublicIP": {
+      "value": "scsmlab01"
+    },
+    "vnetName": {
+      "value": "scsmlab01vnet"
+    },
+    "vmBaseTemplate": {
+      "value": "Base/VM.json"
+    },
+    "networkTemplate": {
+      "value": "Base/Network.json"
+    },
+    "lbTemplate": {
+      "value": "Base/LoadBalancer.json"
+    },
+    "addressPrefix": {
+      "value": "10.0.0.0/16"
+    },
+    "subnetName": {
+      "value": "subnet01"
+    },
+    "subnetPrefix": {
+      "value": "10.0.0.0/24"
+    },
+    "storageTemplate": {
+      "value": "Base/Storage.json"
+    },
+    "storageAccountType": {
+      "value": "Standard_LRS"
+    },
+    "tier1ClusterNamePrefix": {
+      "value": "dc"
+    },
+    "tier2ClusterNamePrefix": {
+      "value": "sql"
+    },
+    "tier3ClusterNamePrefix": {
+      "value": "scsm"
+    },
+    "tier1VMTemplateNames": {
+      "value": [
+        "VM/VMDC2012SingleInstance"
+      ]
+    },
+    "tier2VMTemplateNames": {
+      "value": [
+        "VM/VMSQL2012R2StndSingleInstance"
+      ]
+    },
+    "tier3VMTemplateNames": {
+      "value": [
+        "VM/VMSCSM2012R2PrimMngt",
+        "VM/VMSCSM2012R2PrimMngt"
+      ]
+    },
+    "nicTemplate": {
+      "value": "Base/NIC.json"
+    },
+    "tier1InstanceVMSize": {
+      "value": "Standard_A1"
+    },
+    "tier1InstanceCount": {
+      "value": 1
+    },
+    "tier2InstanceVMSize": {
+      "value": "Standard_D2"
+    },
+    "tier2InstanceCount": {
+      "value": 1
+    },
+    "tier3InstanceVMSize": {
+      "value": "Standard_A2"
+    },
+    "tier3InstanceCount": {
+      "value": 2
+    },
+    "frontEndPortRDP": {
+      "value": 50000
+    },
+    "adminUsername": {
+      "value": "labadmin"
+    },
+    "adminPassword": {
+      "value": "Passw0rd1"
+    },
+    "vmTierDeploymentTemplate": {
+      "value": "Base/VMTierDeployment.json"
+    }
+  }
+}

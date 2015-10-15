@@ -1,0 +1,356 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "templatebaseuri": {
+      "type": "string"
+    },
+    "vnetName": {
+      "type": "string"
+    },
+    "networkTemplate": {
+      "type": "string"
+    },
+    "vmBaseTemplate": {
+      "type": "string"
+    },
+    "lbTemplate": {
+      "type": "string"
+    },
+    "addressPrefix": {
+      "type": "string"
+    },
+    "subnetName": {
+      "type": "string"
+    },
+    "subnetPrefix": {
+      "type": "string"
+    },
+    "storageTemplate": {
+      "type": "string"
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "storageAccountType": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS"
+      ]
+    },
+    "tier1ClusterNamePrefix": {
+      "type": "string"
+    },
+    "tier2ClusterNamePrefix": {
+      "type": "string"
+    },
+    "tier3ClusterNamePrefix": {
+      "type": "string"
+    },
+    "nicTemplate": {
+      "type": "string"
+    },
+    "tier1InstanceVMSize": {
+      "type": "string"
+    },
+    "tier1InstanceCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "The number of tier 1 VM instances to deploy."
+      }
+    },
+    "tier1VMTemplateNames": {
+      "type": "array",
+      "metadata": {
+        "description": "Template names used to deploy tier 1 VMs, ex. VMSQLCL1, VMSQLCL2, or VMSQLCL1, VMSQLCL1 if same template should be used for both."
+      }
+    },
+    "tier2InstanceVMSize": {
+      "type": "string"
+    },
+    "tier2InstanceCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "The number of tier 2 VM instances to deploy."
+      }
+    },
+    "tier2VMTemplateNames": {
+      "type": "array",
+      "metadata": {
+        "description": "Template names used to deploy tier 1 VMs, ex. VMSQLCL1, VMSQLCL2, or VMSQLCL1, VMSQLCL1 if same template should be used for both."
+      }
+    },
+    "tier3InstanceVMSize": {
+      "type": "string"
+    },
+    "tier3InstanceCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "The number of tier 3 VM instances to deploy."
+      }
+    },
+    "tier3VMTemplateNames": {
+      "type": "array",
+      "metadata": {
+        "description": "Template names used to deploy tier 1 VMs, ex. VMSQLCL1, VMSQLCL2, or VMSQLCL1, VMSQLCL1 if same template should be used for both."
+      }
+    },
+    "frontEndPortRDP": {
+      "type": "int"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "dnsNameForPublicIP": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique DNS name for Public IP"
+      }
+    },
+    "vmTierDeploymentTemplate": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "nicPostfix": "nic",
+    "pulicIPPostfix": "pubIP",
+    "availSetPostfix": "availSet",
+    "loadBalPostfix": "LoadBalancer",
+    "LBFEPostfix": "LBFE",
+    "LBBEPostfix": "LBBE",
+    "vmPostfix": "VM",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('vnetName'))]",
+    "subnetID": "[concat(variables('vnetID'), '/subnets/', parameters('subnetName'))]",
+    "addressPrefixSplit": "[split(parameters('addressPrefix'), '.')]",
+    "publicIPAllocationMethod": "Dynamic",
+    "natRuleRDPName": "natRuleRDP",
+    // instanceConfigurtions must follow this specific ordering to correctly compute the ip address offset. TODO: maybe possible to use the reference function to get ip address of last deployed nic?
+    "instanceConfigurations": [      
+      "[variables('tier1InstanceConfig')]",
+      "[variables('tier2InstanceConfig')]",
+      "[variables('tier3InstanceConfig')]"
+    ],
+    "tier1InstanceConfig": {
+      "InstanceCount": "[int(parameters('tier1InstanceCount'))]",
+      "InstanceSize": "[parameters('tier1InstanceVMSize')]",
+      "templateNames": "[parameters('tier1VMTemplateNames')]",
+      "clusterNamePrefix": "[parameters('tier1ClusterNamePrefix')]",
+      "ipAddressOffset": 4
+    },
+    "tier2InstanceConfig": {
+      "InstanceCount": "[int(parameters('tier2InstanceCount'))]",
+      "InstanceSize": "[parameters('tier2InstanceVMSize')]",
+      "templateNames": "[parameters('tier2VMTemplateNames')]",
+      "clusterNamePrefix": "[parameters('tier2ClusterNamePrefix')]",
+      "ipAddressOffset": "[int(add(variables('tier1InstanceConfig').ipAddressOffset, variables('tier1InstanceConfig').InstanceCount))]"
+    },
+    "tier3InstanceConfig": {
+      "InstanceCount": "[int(parameters('tier3InstanceCount'))]",
+      "InstanceSize": "[parameters('tier3InstanceVMSize')]",
+      "templateNames": "[parameters('tier3VMTemplateNames')]",
+      "clusterNamePrefix": "[parameters('tier3ClusterNamePrefix')]",
+      "ipAddressOffset": "[int(add(variables('tier2InstanceConfig').ipAddressOffset, variables('tier2InstanceConfig').InstanceCount))]"
+    },
+  },
+  "resources": [
+    { // deploy vnet from template
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[parameters('vnetName')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('networkTemplate'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetname": { "value": "[parameters('vnetName')]" },
+          "location": { "value": "[resourceGroup().location]" },
+          "addressPrefix": { "value": "[parameters('addressPrefix')]" },
+          "subnetName": { "value": "[parameters('subnetName')]" },
+          "subnetPrefix": { "value": "[parameters('subnetPrefix')]" }
+        }
+      }
+    },
+    { // deploy storage account from template
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[parameters('storageAccountName')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('storageTemplate'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "storageAccountType": { "value": "[parameters('storageAccountType')]" },
+          "location": { "value": "[resourceGroup().location]" },
+          "storageAccountName": { "value": "[parameters('storageAccountName')]" }
+        }
+      }
+    },
+    { // deploy NICs from template
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "copy": {
+        "name": "nicCopy",
+        "count": "[length(variables('instanceConfigurations'))]"
+      },
+      
+      "name": "[concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-NICDeployment')]",
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/',  parameters('vnetName'))]",
+        "[concat('Microsoft.Resources/deployments/',  concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-LBDeployment') )]"
+        //"[resourceId( 'Microsoft.Network/loadBalancers', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('loadBalPostfix')) )]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('nicTemplate'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": { "value": "[parameters('vnetName')]" },
+          "location": { "value": "[resourceGroup().location]" },
+          "subnetName": { "value": "[parameters('subnetName')]" },
+          "nicPostfix": { "value": "[variables('nicPostfix')]" },
+          "addressPrefix": { "value": "[parameters('addressPrefix')]" },
+          "nicPrefix": { "value": "[variables('instanceConfigurations')[copyIndex()].clusterNamePrefix]" },
+          "instanceCount": { "value": "[variables('instanceConfigurations')[copyIndex()].InstanceCount]" },
+          "ipAddressOffset": { "value": "[variables('instanceConfigurations')[copyIndex()].ipAddressOffset]" },
+          "loadBalancerId": {
+            "value": "[resourceId( 'Microsoft.Network/loadBalancers', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('loadBalPostfix')) )]"
+          },
+          //"loadBalancerId": "[resourceId( 'Microsoft.Network/loadBalancers', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('loadBalPostfix')) )]",
+          "natRuleRDPName": {
+            "value": "[variables('natRuleRDPName')]"
+          },
+          "loadBalancerInboundNatRules": {
+            "value": [
+              { // NAT rule naming: concat(parameters('lbPrefix'), '0', copyIndex(1), '-', parameters('natRuleRDPName'))  concat(parameters('lbPrefix'), '01-', parameters('natRuleRDPName'))
+                "id": "[concat( resourceId( 'Microsoft.Network/loadBalancers', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('loadBalPostfix')) ), '/inboundNatRules/', variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '0', copyIndex(1),'-', variables('natRuleRDPName') )]"
+              }
+            ]
+          }, //"[concat(resourceId('Microsoft.Network/loadBalancers', concat(parameters('nicPrefix')[copyIndex()], '-', variables('loadBalPostfix'))), '/inboundNatRules/', variables('natRuleRDP') )]"
+          "loadBalancerBackendAddressPools": {
+            "value": [
+              {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('loadBalPostfix'))), '/backendAddressPools/', variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('LBBEPostfix'))]"
+              }
+            ]
+          }, //"[concat(resourceId('Microsoft.Network/loadBalancers', concat(parameters('nicPrefix')[copyIndex()], '-', variables('loadBalPostfix'))), '/backendAddressPools/', parameters('nicPrefix')[copyIndex()], '-', variables('LBBEPostfix'))]"
+        }
+      }
+    },
+    { // deploy load balancers from template
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-LBDeployment')]",
+      "copy": {
+        "name": "lbCopy",
+        "count": "[length(variables('instanceConfigurations'))]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('pulicIPPostfix')) )]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('lbTemplate'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "lbPrefix": { "value": "[variables('instanceConfigurations')[copyIndex()].clusterNamePrefix]" },
+          "lbPostfix": { "value": "[variables('loadBalPostfix')]" },
+          "frontEndPostfix": { "value": "[variables('LBFEPostfix')]" },
+          "backEndPostfix": { "value": "[variables('LBBEPostfix')]" },
+          "location": { "value": "[resourceGroup().location]" },
+          "nicCount": { "value": "[variables('instanceConfigurations')[copyIndex()].InstanceCount]" },
+          "frontendPortRDP": { "value": "[parameters('frontEndPortRDP')]" },
+          "natRuleRDPName": { "value": "[variables('natRuleRDPName')]" },
+          "publicIPAddressId": { "value": "[resourceId( 'Microsoft.Network/publicIPAddresses', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('pulicIPPostfix')) )]" }
+        },
+      }
+    },
+    { // deploy VM tiers from templates
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat('VMTier', copyIndex(1) ,'Deployment')]",
+      "copy": {
+        "name": "vmCopy",
+        "count": "[length(variables('instanceConfigurations'))]"
+      },
+      // depends on NICs being deployed. These are dependant on load balancer (dependant on public IPs) and vnet.
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-NICDeployment') )]",
+        "[concat('Microsoft.Resources/deployments/', parameters('storageAccountName') )]",
+        "[concat('Microsoft.Compute/availabilitySets/', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('availSetPostfix')))]",
+        "[concat('Microsoft.Resources/deployments/',  concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-LBDeployment') )]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templatebaseuri'), '/', parameters('vmTierDeploymentTemplate'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "prefix": { "value": "[variables('instanceConfigurations')[copyIndex()].clusterNamePrefix]" },
+          "postfix": { "value": "[variables('vmPostfix')]" },
+          //"instanceCount": { "value": "[variables('instanceConfigurations')[copyIndex()].InstanceCount]" },
+          "instanceSize": { "value": "[variables('instanceConfigurations')[copyIndex()].InstanceSize]" },
+          "location": { "value": "[resourceGroup().location]" },
+          "adminUsername": { "value": "[parameters('adminUsername')]" },
+          "adminPassword": { "value": "[parameters('adminPassword')]" },
+          "storageAccountName": { "value": "[parameters('storageAccountName')]" },
+          "templateNames": { "value": "[variables('instanceConfigurations')[copyIndex()].templateNames]" },
+          "templateBaseUri": { "value": "[concat(parameters('templatebaseuri'), 'VM/')]" },
+          "vmBaseTemplateUri": { "value": "[concat(parameters('templatebaseuri'), 'VM/', parameters('vmBaseTemplate'))]" },
+          "parentResourceName": {"value": "[concat('VMTier', copyIndex(1) ,'Deployment')]"}
+
+          //"dependsOn": { "value": "" },
+
+          // cannot supply resourceId directly. it compains the resource is not defined in a template???
+          //"networkInterfaceId": { "value": "" }, // "[resourceId( 'Microsoft.Network/networkInterfaces', concat( variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '0', copyIndex(1), '-', variables('nicPostfix') ) )]" },
+          //"loadBalancerId": { "value": "" }, //"[resourceId( 'Microsoft.Network/loadBalancers', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('loadBalPostfix')) )]"
+          //"availabilitySetId": { "value": "" }, //"[resourceId( 'Microsoft.Compute/availabilitySets', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('availSetPostfix')) )]" },
+          //"imageReference": { "value": "[variables('instanceConfigurations')[copyIndex()].imageReference]" }
+        }
+      }
+    },
+    { // deploy public IP addresses
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "name": "[concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('pulicIPPostfix'))]",
+      "copy": {
+        "name": "pipCopy",
+        "count": "[length(variables('instanceConfigurations'))]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[variables('publicIPAllocationMethod')]",
+        "dnsSettings": {
+          "domainNameLabel": "[concat( variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', parameters('dnsNameForPublicIP') )]"
+        }
+      }
+    },
+    { // deploy availability sets
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('availSetPostfix'))]",
+      "copy": {
+        "name": "availCopy",
+        "count": "[length(variables('instanceConfigurations'))]"
+      }
+    }
+  ],
+      "outputs": {
+      }
+    }
