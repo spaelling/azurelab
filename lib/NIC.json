@@ -1,0 +1,87 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetName": {
+      "type": "string"
+    },
+    "nicPrefix": {
+      "type": "string"
+    },
+    "nicPostfix": {
+      "type": "string"
+    },
+    "instanceCount": {
+      "type": "int"
+    },
+    "ipAddressOffset": {
+      "type": "int"
+    },
+    "addressPrefix": {
+      "type": "string"
+    },
+    "subnetName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "loadBalancerInboundNatRules": {
+      "type": "array"
+    },
+    "loadBalancerBackendAddressPools": {
+      "type": "array"
+    },
+    "loadBalancerId": {
+      "type": "string"
+    },
+    "natRuleRDPName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "addressPrefixSplit": "[split(parameters('addressPrefix'), '.')]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+    "subnetID": "[concat(variables('vnetID'), '/subnets/', parameters('subnetName'))]",
+  },
+  "resources": [
+    {
+      // deploy NICs
+      "dependsOn": [
+        //"[parameters('loadBalancerID')]"
+      ],
+      "name": "[concat(parameters('nicPrefix'), '0', copyIndex(1), '-', parameters('nicPostfix'))]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[parameters('location')]",
+      "apiVersion": "2015-05-01-preview",
+      "copy": {
+        "name": "nicCopy",
+        "count": "[parameters('instanceCount')]"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[concat(parameters('nicPrefix'), '0', copyIndex(1), '-', 'ipconfig')]",
+            "properties": {
+              "privateIPAllocationMethod": "static",
+              // generate ip addresses
+              "privateIPAddress": "[concat(variables('addressPrefixSplit')[0], '.', variables('addressPrefixSplit')[1], '.', variables('addressPrefixSplit')[2], '.', copyIndex(parameters('ipAddressOffset')) )]",
+              "subnet": {
+                "id": "[variables('subnetID')]"
+              },
+              "loadBalancerBackendAddressPools": "[parameters('loadBalancerBackendAddressPools')]",
+              //"loadBalancerInboundNatRules": "[parameters('loadBalancerInboundNatRules')]"
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat( parameters('loadBalancerId'), '/inboundNatRules/', parameters('nicPrefix'), '0', copyIndex(1),'-', parameters('natRuleRDPName') )]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+    "outputs": {
+    }
+}

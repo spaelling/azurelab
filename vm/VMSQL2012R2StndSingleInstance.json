@@ -1,0 +1,70 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmBaseTemplateUri": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "postfix": {
+      "type": "string"
+    },
+    "instanceSize": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "string"
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "parentResourceName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    { // deploy VMs from template
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat(parameters('parentResourceName'), '/', 'deploy')]",
+      //"dependsOn": "[parameters('dependsOn')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('vmBaseTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "prefix": { "value": "[parameters('prefix')]" },
+          "postfix": { "value": "[parameters('postfix')]" },
+          "instanceSize": { "value": "[parameters('instanceSize')]" },
+          "location": { "value": "[parameters('location')]" },
+          "adminUsername": { "value": "[parameters('adminUsername')]" },
+          "adminPassword": { "value": "[parameters('adminPassword')]" },
+          "storageAccountName": { "value": "[parameters('storageAccountName')]" },
+          "imageReference": {
+            "value": {
+              "publisher": "MicrosoftSQLServer",
+              "version": "latest",
+              "sku": "standard",
+              "offer": "SQL2012SP2-WS2012R2"
+            }
+          },
+          "parentResourceName": {"value": "[concat(parameters('parentResourceName'), '/', 'deploy')]"}
+        } // end of parameters
+      } // end of deployment
+    }
+  ],
+    "outputs": {
+    }
+}

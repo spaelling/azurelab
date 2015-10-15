@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>0968fba5-a13a-4cd5-adf4-914a422db9ee</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworkIdentifier>Deployment</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>1.0</TargetFrameworkVersion>
+    <PrepareForBuildDependsOn>
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+  <Import Condition=" Exists('Deployment.targets') " Project="Deployment.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <!-- vertag<:>start tokens<:>maj.min -->
+  <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
+  <!-- vertag<:>end -->
+  <ItemGroup>
+    <Folder Include="Scripts\" />
+    <Folder Include="Templates\LoadBalancer\" />
+    <Folder Include="Templates\VMTier\" />
+    <Folder Include="Templates\VM\" />
+    <Folder Include="Templates\NIC\" />
+    <Folder Include="Templates\VirtualNetwork\" />
+    <Folder Include="Tools\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\lib\LoadBalancer.json">
+      <Link>Templates\LoadBalancer\LoadBalancer.json</Link>
+    </None>
+    <None Include="..\..\..\lib\Network.json">
+      <Link>Templates\VirtualNetwork\Network.json</Link>
+    </None>
+    <None Include="..\..\..\lib\NIC.json">
+      <Link>Templates\NIC\NIC.json</Link>
+    </None>
+    <None Include="..\..\..\lib\VMBase.json">
+      <Link>Templates\VM\VMBase.json</Link>
+    </None>
+    <None Include="..\..\..\lib\VMTierDeployment.json">
+      <Link>Templates\VMTier\VMTierDeployment.json</Link>
+    </None>
+    <None Include="..\..\..\scripts\helper.ps1">
+      <Link>Scripts\helper.ps1</Link>
+    </None>
+    <None Include="..\..\..\vm\VMDC2012SingleInstance.json">
+      <Link>Templates\VM\VMDC2012SingleInstance.json</Link>
+    </None>
+    <None Include="..\..\..\vm\VMSCSM2012R2PrimMngt.json">
+      <Link>Templates\VM\VMSCSM2012R2PrimMngt.json</Link>
+    </None>
+    <None Include="..\..\..\vm\VMSQL2012R2StndSingleInstance.json">
+      <Link>Templates\VM\VMSQL2012R2StndSingleInstance.json</Link>
+    </None>
+    <None Include="Deployment.targets">
+      <Visible>False</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Tools\Microsoft.Data.Edm.dll">
+      <Visible>False</Visible>
+    </None>
+    <None Include="Tools\Microsoft.Data.OData.dll">
+      <Visible>False</Visible>
+    </None>
+    <None Include="Tools\Microsoft.Data.Services.Client.dll">
+      <Visible>False</Visible>
+    </None>
+    <None Include="Tools\Microsoft.WindowsAzure.Storage.dll">
+      <Visible>False</Visible>
+    </None>
+    <None Include="Tools\Microsoft.WindowsAzure.Storage.DataMovement.dll">
+      <Visible>False</Visible>
+    </None>
+  </ItemGroup>
+  <Target Name="GetReferenceAssemblyPaths" />
+</Project>

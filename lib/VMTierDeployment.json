@@ -1,0 +1,74 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmBaseTemplateUri": {
+      "type": "string"
+    },
+    "templateNames": {
+      "type": "array"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "postfix": {
+      "type": "string"
+    },
+    "instanceSize": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "string"
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "templateBaseUri": {
+      "type": "string"
+    },
+    "parentResourceName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    { // deploy VMs from template
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat(parameters('parentResourceName'), '/', parameters('templateNames')[copyIndex()])]",
+      //"dependsOn": "[parameters('dependsOn')]",
+      "copy": {
+        "name": "vmTierCopy",
+        "count": "[length(parameters('templateNames'))]"
+      },
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('templateBaseUri'), '/', parameters('templateNames')[copyIndex()], '.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "prefix": { "value": "[parameters('prefix')]" },
+          "postfix": { "value": "[parameters('postfix')]" },
+          "instanceSize": { "value": "[parameters('instanceSize')]" },
+          "location": { "value": "[parameters('location')]" },
+          "adminUsername": { "value": "[parameters('adminUsername')]" },
+          "adminPassword": { "value": "[parameters('adminPassword')]" },
+          "storageAccountName": { "value": "[parameters('storageAccountName')]" },
+          "vmBaseTemplateUri": { "value": "[parameters('vmBaseTemplateUri')]" },
+          "deploymentName": { "value": "[concat(parameters('templateNames')[copyIndex()], '-deployment/nested')]" }
+
+        } // end of parameters
+      } // end of deployment
+    }
+  ],
+    "outputs": {
+    }
+}

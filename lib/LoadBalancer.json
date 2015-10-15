@@ -1,0 +1,111 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "lbPostfix": {
+      "type": "string"
+    },
+    "lbPrefix": {
+      "type": "string"
+    },
+    "frontEndPostfix": {
+      "type": "string"
+    },
+    "backEndPostfix": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "nicCount": {
+      "type": "int",
+      "metadata": {
+        "description": "number of NICs associated with load balancer. Controls the number of inbound NAT rules"
+      }
+    },
+    "frontendPortRDP": {
+      "type": "int",
+      "metadata": {
+        "description": "The starting port for RDP"
+      }
+    },
+    "publicIPAddressId": {
+      "type": "string"
+    },
+    "natRuleRDPName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "loadBalancerId": "[resourceId('Microsoft.Network/loadBalancers', concat(parameters('lbPrefix'), '-', parameters('lbPostfix')))]",
+    "frontEndIPConfigurationId": "[concat(variables('loadBalancerId'), '/frontendIPConfigurations/', parameters('lbPrefix'), '-', parameters('frontEndPostfix'))]"
+  },
+  "resources": [
+    { // deploy load balancers
+      "apiVersion": "2015-05-01-preview",
+      "name": "[concat(parameters('lbPrefix'), '-', parameters('lbPostfix'))]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[parameters('location')]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "properties": {
+              "publicIPAddress": {
+                "id": "[parameters('publicIPAddressId')]" //"[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('instanceConfigurations')[copyIndex()].clusterNamePrefix, '-', variables('pulicIPPostfix')) )]"
+              }
+            },
+            "name": "[concat(parameters('lbPrefix'), '-', parameters('frontEndPostfix'))]"
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[concat(parameters('lbPrefix'), '-', parameters('backEndPostfix'))]"
+          }
+        ],
+        "inboundNatRules": [ // no way to create these rules dynamically. We will create 3 statically which will support up to 3 VMs per load balancer
+          {
+            // 1:1 relationship to NICs
+            "name": "[concat(parameters('lbPrefix'), '01-', parameters('natRuleRDPName'))]",
+
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigurationId')]" //"[concat(resourceId('Microsoft.Network/loadBalancers', concat(parameters('lbPrefix'), '-', parameters('frontEndPostfix'))), '/frontendIPConfigurations/', parameters('lbPrefix'), '-', parameters('frontEndPostfix'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 50001, // each NIC must have its own frontend port
+              "backendPort": 3389
+            }
+          },
+          {
+            // 1:1 relationship to NICs
+            "name": "[concat(parameters('lbPrefix'), '02-', parameters('natRuleRDPName'))]",
+
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigurationId')]" // "[concat(resourceId('Microsoft.Network/loadBalancers', concat(parameters('lbPrefix'), '-', parameters('frontEndPostfix'))), '/frontendIPConfigurations/', parameters('lbPrefix'), '-', parameters('frontEndPostfix'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 50002, // each NIC must have its own frontend port
+              "backendPort": 3389
+            }
+          },
+          {
+            // 1:1 relationship to NICs
+            "name": "[concat(parameters('lbPrefix'), '03-', parameters('natRuleRDPName'))]",
+
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigurationId')]" // "[concat(resourceId('Microsoft.Network/loadBalancers', concat(parameters('lbPrefix'), '-', parameters('frontEndPostfix'))), '/frontendIPConfigurations/', parameters('lbPrefix'), '-', parameters('frontEndPostfix'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 50003, // each NIC must have its own frontend port
+              "backendPort": 3389
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+  }
+}

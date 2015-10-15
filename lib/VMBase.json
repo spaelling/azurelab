@@ -1,0 +1,109 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "prefix": {
+      "type": "string"
+    },
+    "postfix": {
+      "type": "string"
+    },
+    "instanceCount": {
+      "type": "int"
+    },
+    "location": {
+      "type": "string"
+    },
+    "instanceSize": {
+      "type": "string"
+    },
+    "availabilitySetId": {
+      "type": "string",
+      "defaultValue": "notused"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "imageReference": {
+      "type": "object"
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "networkInterfaceId": {
+      "type": "string",
+      "defaultValue": "notused"
+    },
+    "loadBalancerId": {
+      "type": "string",
+      "defaultValue": "notused"
+    },
+    "dataDisks": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "parentResourceName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "nicPostfix": "nic",
+    "availSetPostfix": "availSet"
+    //"loadBalancerId": "[resourceId( 'Microsoft.Network/loadBalancers', concat(parameters('prefix'), '-', 'LoadBalancer') )]"
+  },
+  "resources": [
+    { // Deploy VMs
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[parameters('location')]",
+      "name": "[concat(parameters('parentResourceName'), '/', parameters('prefix'), '0', copyIndex(1), '-', parameters('postfix'))]",
+      "copy": {
+        "name": "vmCopy",
+        "count": "[parameters('instanceCount')]"
+      },
+      "dependsOn": [
+        //"[variables('loadBalancerId')]",
+        //"[parameters('networkInterfaceId')]",
+        //"[parameters('availabilitySetId')]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('instanceSize')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId( 'Microsoft.Compute/availabilitySets', concat(parameters('prefix'), '-', variables('availSetPostfix')) )]" // "[parameters('availabilitySetId')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('prefix'), '0', copyIndex(1))]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": "[parameters('imageReference')]",
+          "osDisk": {
+            "name": "osdisk",
+            "vhd": {
+              "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', parameters('prefix'), '0', copyIndex(1), '-osdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": "[parameters('dataDisks')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              // concat(parameters('nicPrefix'), '0', copyIndex(1), '-', parameters('nicPostfix'))
+              "id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat( parameters('prefix'), '0', copyIndex(1), '-', variables('nicPostfix') ) )]"//"[parameters('networkInterfaceId')]"
+            }
+          ]
+        }
+      }
+    }
+  ],
+    "outputs": {
+    }
+}
