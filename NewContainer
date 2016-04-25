@@ -1,0 +1,10 @@
+configuration NewContainer {
+    Import-DscResource -ModuleName cWindowsContainer
+
+    cWindowsContainer MyAppContainer {
+        Ensure = 'Present'
+        Name = 'MyAppContainer'
+        StartUpScript = '"Hello World" | out-file c:\hello.txt'
+        ContainerImageName = 'WindowsServerCore'
+    }
+}
